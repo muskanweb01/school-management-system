@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Result</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div class="header">
+    <h1>🎓 Student Result</h1>
+    <a href="/marks">← Back to Marks & Results</a>
+</div>
+
+<div class="container">
+
+    <h2>Student Information</h2>
+
+    <p>
+        <strong>Name:</strong>
+        {{ student['name'] }}
+    </p>
+
+    <p>
+        <strong>Roll Number:</strong>
+        {{ student['roll_number'] }}
+    </p>
+
+    <p>
+        <strong>Class:</strong>
+        {{ student['class_name'] }}
+    </p>
+
+    <hr>
+
+    <h2>Marks Details</h2>
+
+    <table>
+
+        <tr>
+            <th>Subject</th>
+            <th>Obtained Marks</th>
+            <th>Total Marks</th>
+            <th>Percentage</th>
+            <th>Grade</th>
+            <th>Result</th>
+        </tr>
+
+        {% for mark in marks %}
+
+        {% set percentage = (mark['marks_obtained'] / mark['total_marks'] * 100) %}
+
+        <tr>
+
+            <td>{{ mark['subject'] }}</td>
+
+            <td>{{ mark['marks_obtained'] }}</td>
+
+            <td>{{ mark['total_marks'] }}</td>
+
+            <td>
+                {{ "%.2f"|format(percentage) }}%
+            </td>
+
+            <td>
+                {% if percentage >= 80 %}
+                    A+
+                {% elif percentage >= 70 %}
+                    A
+                {% elif percentage >= 60 %}
+                    B
+                {% elif percentage >= 50 %}
+                    C
+                {% elif percentage >= 40 %}
+                    D
+                {% else %}
+                    F
+                {% endif %}
+            </td>
+
+            <td>
+                {% if percentage >= 40 %}
+                    Pass
+                {% else %}
+                    Fail
+                {% endif %}
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    <br>
+
+    <h2>Final Result</h2>
+
+    <p>
+        <strong>Total Marks:</strong>
+        {{ total_obtained }} / {{ total_marks }}
+    </p>
+
+    <p>
+        <strong>Overall Percentage:</strong>
+        {{ percentage }}%
+    </p>
+
+    <p>
+        <strong>Overall Grade:</strong>
+        {{ grade }}
+    </p>
+
+    <p>
+        <strong>Final Result:</strong>
+        {{ result_status }}
+    </p>
+
+    <br>
+
+    <a href="/marks">
+        ← Back to Marks & Results
+    </a>
+
+</div>
+
+</body>
+</html>

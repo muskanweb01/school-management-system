@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Students Management</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>👩‍🎓 Students Management</h1>
+        <a href="/">← Back to Dashboard</a>
+    </div>
+
+    <div class="container">
+
+        <div class="form-box">
+            <h2>🔎 Search Student</h2>
+
+            <form method="GET" action="/students">
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Name, Roll Number or Class"
+                    value="{{ search }}"
+                >
+
+                <button type="submit">Search</button>
+
+                <a href="/students">Clear</a>
+            </form>
+        </div>
+
+
+        <div class="form-box">
+            <h2>➕ Add New Student</h2>
+
+            <form method="POST" action="/add_student">
+
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Student Name"
+                    required
+                >
+
+                <input
+                    type="text"
+                    name="roll_number"
+                    placeholder="Roll Number"
+                    required
+                >
+
+                <input
+                    type="text"
+                    name="class_name"
+                    placeholder="Class"
+                    required
+                >
+
+                <input
+                    type="text"
+                    name="section"
+                    placeholder="Section"
+                >
+
+                <input
+                    type="text"
+                    name="parent_name"
+                    placeholder="Parent Name"
+                >
+
+                <input
+                    type="text"
+                    name="parent_contact"
+                    placeholder="Parent Contact"
+                >
+
+                <button type="submit">
+                    Save Student
+                </button>
+
+            </form>
+        </div>
+
+
+        <h2>📋 Student Records</h2>
+
+        <table>
+
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Roll Number</th>
+                <th>Class</th>
+                <th>Section</th>
+                <th>Parent Name</th>
+                <th>Parent Contact</th>
+                <th>Actions</th>
+            </tr>
+
+            {% for student in students %}
+
+            <tr>
+
+                <td>{{ student["id"] }}</td>
+                <td>{{ student["name"] }}</td>
+                <td>{{ student["roll_number"] }}</td>
+                <td>{{ student["class_name"] }}</td>
+                <td>{{ student["section"] or "" }}</td>
+                <td>{{ student["parent_name"] or "" }}</td>
+                <td>{{ student["parent_contact"] or "" }}</td>
+
+                <td>
+                    <a
+                        class="edit"
+                        href="/edit_student/{{ student['id'] }}"
+                    >
+                        Edit
+                    </a>
+
+                    <a
+                        class="delete"
+                        href="/delete_student/{{ student['id'] }}"
+                        onclick="return confirm('Delete this student?')"
+                    >
+                        Delete
+                    </a>
+                </td>
+
+            </tr>
+
+            {% else %}
+
+            <tr>
+                <td colspan="8">
+                    No students found.
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+</body>
+</html>

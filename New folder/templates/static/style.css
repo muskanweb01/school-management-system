@@ -1,0 +1,123 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f6f8;
+    color: #222;
+}
+
+.header {
+    background: #1e3a5f;
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
+
+.header a {
+    color: white;
+    text-decoration: none;
+}
+
+.container {
+    padding: 30px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    padding: 30px;
+    text-align: center;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.card a {
+    text-decoration: none;
+    color: #222;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.icon {
+    display: block;
+    font-size: 40px;
+    margin-bottom: 15px;
+}
+
+.form-box {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+input {
+    padding: 12px;
+    margin: 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+button {
+    padding: 12px 20px;
+    background: #1e3a5f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+table {
+    width: 100%;
+    background: white;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background: #1e3a5f;
+    color: white;
+}
+
+select {
+    padding: 8px;
+}
+
+.edit {
+    color: blue;
+    margin-right: 10px;
+}
+
+.delete {
+    color: red;
+}
+
+@media (max-width: 800px) {
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 15px;
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 800px;
+    }
+}

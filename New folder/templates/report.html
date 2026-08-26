@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance Reports</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div class="header">
+    <h1>📊 Attendance Reports</h1>
+    <a href="/">← Back to Dashboard</a>
+</div>
+
+<div class="container">
+
+    <div class="form-box">
+
+        <h2>🔎 Search Student Report</h2>
+
+        <form method="GET" action="/report">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Student Name or Roll Number"
+                value="{{ search }}"
+            >
+
+            <button type="submit">
+                Search
+            </button>
+
+            <a href="/report">Clear</a>
+
+        </form>
+
+    </div>
+
+
+    <h2>📋 Attendance Summary</h2>
+
+    <table>
+
+        <tr>
+            <th>Student</th>
+            <th>Roll Number</th>
+            <th>Class</th>
+            <th>Total Days</th>
+            <th>Present</th>
+            <th>Absent</th>
+            <th>Leave</th>
+            <th>Attendance %</th>
+        </tr>
+
+        {% for report in reports %}
+
+        <tr>
+
+            <td>{{ report["name"] }}</td>
+
+            <td>{{ report["roll_number"] }}</td>
+
+            <td>{{ report["class_name"] }}</td>
+
+            <td>{{ report["total_days"] }}</td>
+
+            <td>{{ report["present"] }}</td>
+
+            <td>{{ report["absent"] }}</td>
+
+            <td>{{ report["leave"] }}</td>
+
+            <td>{{ report["percentage"] }}%</td>
+
+        </tr>
+
+        {% else %}
+
+        <tr>
+            <td colspan="8">
+                No attendance records found.
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+</body>
+</html>

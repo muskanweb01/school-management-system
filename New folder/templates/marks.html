@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Marks & Results</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div class="header">
+    <h1>📝 Marks & Results</h1>
+    <a href="/">← Back to Dashboard</a>
+</div>
+
+<div class="container">
+
+    <h2>Add Student Marks</h2>
+
+    <form method="POST" action="/add_marks">
+
+        <select name="student_id" required>
+            <option value="">Select Student</option>
+
+            {% for student in students %}
+            <option value="{{ student['id'] }}">
+                {{ student['name'] }} -
+                {{ student['roll_number'] }} -
+                {{ student['class_name'] }}
+            </option>
+            {% endfor %}
+
+        </select>
+
+        <input
+            type="text"
+            name="subject"
+            placeholder="Subject"
+            required
+        >
+
+        <input
+            type="number"
+            name="marks_obtained"
+            placeholder="Obtained Marks"
+            min="0"
+            step="0.01"
+            required
+        >
+
+        <input
+            type="number"
+            name="total_marks"
+            placeholder="Total Marks"
+            min="1"
+            step="0.01"
+            required
+        >
+
+        <br><br>
+
+        <button type="submit">
+            Save Marks
+        </button>
+
+    </form>
+
+    <br>
+
+    <h2>Marks Records</h2>
+
+    <table>
+
+        <tr>
+            <th>Student</th>
+            <th>Roll Number</th>
+            <th>Class</th>
+            <th>Subject</th>
+            <th>Obtained</th>
+            <th>Total</th>
+            <th>Percentage</th>
+            <th>Grade</th>
+            <th>Result</th>
+            <th>Action</th>
+        </tr>
+
+        {% for mark in marks %}
+
+        {% set percentage = (mark['marks_obtained'] / mark['total_marks'] * 100) %}
+
+        <tr>
+
+            <td>{{ mark['name'] }}</td>
+
+            <td>{{ mark['roll_number'] }}</td>
+
+            <td>{{ mark['class_name'] }}</td>
+
+            <td>{{ mark['subject'] }}</td>
+
+            <td>{{ mark['marks_obtained'] }}</td>
+
+            <td>{{ mark['total_marks'] }}</td>
+
+            <td>{{ "%.2f"|format(percentage) }}%</td>
+
+            <td>
+                {% if percentage >= 80 %}
+                    A+
+                {% elif percentage >= 70 %}
+                    A
+                {% elif percentage >= 60 %}
+                    B
+                {% elif percentage >= 50 %}
+                    C
+                {% elif percentage >= 40 %}
+                    D
+                {% else %}
+                    F
+                {% endif %}
+            </td>
+
+            <td>
+                {% if percentage >= 40 %}
+                    Pass
+                {% else %}
+                    Fail
+                {% endif %}
+            </td>
+
+            <td>
+                <a href="/delete_marks/{{ mark['id'] }}">
+                    Delete
+                </a>
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    <br>
+
+    <h2>View Student Result</h2>
+
+    {% for student in students %}
+
+        <a href="/result/{{ student['id'] }}">
+            {{ student['name'] }} - {{ student['roll_number'] }}
+        </a>
+
+        <br>
+
+    {% endfor %}
+
+</div>
+
+</body>
+</html>

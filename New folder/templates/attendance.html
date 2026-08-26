@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance Management</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div class="header">
+    <h1>✅ Attendance Management</h1>
+    <a href="/">← Back to Dashboard</a>
+</div>
+
+<div class="container">
+
+    <div class="form-box">
+
+        <h2>📅 Select Date</h2>
+
+        <form method="GET" action="/attendance">
+
+            <input
+                type="date"
+                name="date"
+                value="{{ selected_date }}"
+                required
+            >
+
+            <button type="submit">
+                Show Students
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <div class="form-box">
+
+        <h2>📝 Mark Attendance</h2>
+
+        <form method="POST" action="/save_attendance">
+
+            <input
+                type="hidden"
+                name="attendance_date"
+                value="{{ selected_date }}"
+            >
+
+            <table>
+
+                <tr>
+                    <th>Roll Number</th>
+                    <th>Name</th>
+                    <th>Class</th>
+                    <th>Section</th>
+                    <th>Status</th>
+                </tr>
+
+                {% for student in students %}
+
+                <tr>
+
+                    <td>{{ student["roll_number"] }}</td>
+
+                    <td>{{ student["name"] }}</td>
+
+                    <td>{{ student["class_name"] }}</td>
+
+                    <td>{{ student["section"] or "" }}</td>
+
+                    <td>
+
+                        <select name="status_{{ student['id'] }}">
+
+                            <option value="Present"
+                                {% if attendance.get(student["id"]) == "Present" %}
+                                selected
+                                {% endif %}>
+                                Present
+                            </option>
+
+                            <option value="Absent"
+                                {% if attendance.get(student["id"]) == "Absent" %}
+                                selected
+                                {% endif %}>
+                                Absent
+                            </option>
+
+                            <option value="Leave"
+                                {% if attendance.get(student["id"]) == "Leave" %}
+                                selected
+                                {% endif %}>
+                                Leave
+                            </option>
+
+                        </select>
+
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+                    <td colspan="5">
+                        No students found.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+            <br>
+
+            <button type="submit">
+                💾 Save Attendance
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

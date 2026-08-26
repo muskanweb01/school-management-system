@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Classes Management</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div class="header">
+    <h1>🏫 Classes Management</h1>
+    <a href="/">← Back to Dashboard</a>
+</div>
+
+<div class="container">
+
+    <h2>Classes Records</h2>
+
+    <a href="/add_class">
+        <button type="button">➕ Add Class</button>
+    </a>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Class Name</th>
+            <th>Section</th>
+            <th>Teacher</th>
+            <th>Action</th>
+        </tr>
+
+        {% for class_item in classes %}
+        <tr>
+            <td>{{ class_item['id'] }}</td>
+            <td>{{ class_item['class_name'] }}</td>
+            <td>{{ class_item['section'] }}</td>
+            <td>{{ class_item['teacher_name'] }}</td>
+
+            <td>
+                <a href="/edit_class/{{ class_item['id'] }}">
+                    <button type="button">Edit</button>
+                </a>
+
+                <a href="/delete_class/{{ class_item['id'] }}">
+                    <button type="button">Delete</button>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+</div>
+
+</body>
+</html>
