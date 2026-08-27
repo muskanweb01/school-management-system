@@ -1,5 +1,7 @@
 from flask import Flask, request, redirect, render_template
-import sqlite3
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from datetime import date
 
 app = Flask(
@@ -14,17 +16,22 @@ app = Flask(
 # =====================================================
 
 def get_db():
-    conn = sqlite3.connect("school.db")
-    conn.row_factory = sqlite3.Row
+    database_url = os.environ.get("DATABASE_URL")
+
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is not set")
+
+    conn = psycopg2.connect(database_url)
     return conn
 
 
 def init_db():
     conn = get_db()
+    cursor = conn.cursor()
 
-    conn.execute("""
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS students (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             roll_number TEXT NOT NULL,
             class_name TEXT NOT NULL,
@@ -34,9 +41,9 @@ def init_db():
         )
     """)
 
-    conn.execute("""
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS attendance (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             student_id INTEGER NOT NULL,
             attendance_date TEXT NOT NULL,
             status TEXT NOT NULL,
@@ -45,9 +52,9 @@ def init_db():
         )
     """)
 
-    conn.execute("""
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS teachers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             teacher_id TEXT NOT NULL,
             subject TEXT NOT NULL,
@@ -56,22 +63,18 @@ def init_db():
         )
     """)
 
-    conn.execute("""
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS classes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             class_name TEXT NOT NULL,
             section TEXT,
             teacher_name TEXT
         )
     """)
 
-    # =================================================
-    # MARKS / RESULTS TABLE
-    # =================================================
-
-    conn.execute("""
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS marks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             student_id INTEGER NOT NULL,
             subject TEXT NOT NULL,
             marks_obtained REAL NOT NULL,
@@ -81,6 +84,7 @@ def init_db():
     """)
 
     conn.commit()
+    cursor.close()
     conn.close()
 
 
@@ -105,11 +109,16 @@ def classes():
 
     conn = get_db()
 
-    class_list = conn.execute("""
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    cursor.execute("""
         SELECT * FROM classes
         ORDER BY id DESC
-    """).fetchall()
+    """)
 
+    class_list = cursor.fetchall()
+
+    cursor.close()
     conn.close()
 
     return render_template(
@@ -132,11 +141,12 @@ def add_class():
         teacher_name = request.form.get("teacher_name", "")
 
         conn = get_db()
+        cursor = conn.cursor()
 
-        conn.execute("""
+        cursor.execute("""
             INSERT INTO classes
             (class_name, section, teacher_name)
-            VALUES (?, ?, ?)
+            VALUES (%s, %s, %s)
         """, (
             class_name,
             section,
@@ -144,6 +154,7 @@ def add_class():
         ))
 
         conn.commit()
+        cursor.close()
         conn.close()
 
         return redirect("/classes")
@@ -159,13 +170,15 @@ def add_class():
 def delete_class(class_id):
 
     conn = get_db()
+    cursor = conn.cursor()
 
-    conn.execute(
-        "DELETE FROM classes WHERE id = ?",
+    cursor.execute(
+        "DELETE FROM classes WHERE id = %s",
         (class_id,)
     )
 
     conn.commit()
+    cursor.close()
     conn.close()
 
     return redirect("/classes")
@@ -179,6 +192,7 @@ def delete_class(class_id):
 def edit_class(class_id):
 
     conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     if request.method == "POST":
 
@@ -186,12 +200,12 @@ def edit_class(class_id):
         section = request.form.get("section", "")
         teacher_name = request.form.get("teacher_name", "")
 
-        conn.execute("""
+        cursor.execute("""
             UPDATE classes
-            SET class_name = ?,
-                section = ?,
-                teacher_name = ?
-            WHERE id = ?
+            SET class_name = %s,
+                section = %s,
+                teacher_name = %s
+            WHERE id = %s
         """, (
             class_name,
             section,
@@ -200,15 +214,20 @@ def edit_class(class_id):
         ))
 
         conn.commit()
+
+        cursor.close()
         conn.close()
 
         return redirect("/classes")
 
-    class_item = conn.execute(
-        "SELECT * FROM classes WHERE id = ?",
+    cursor.execute(
+        "SELECT * FROM classes WHERE id = %s",
         (class_id,)
-    ).fetchone()
+    )
 
+    class_item = cursor.fetchone()
+
+    cursor.close()
     conn.close()
 
     if class_item is None:
@@ -230,26 +249,32 @@ def students():
     search = request.args.get("search", "")
 
     conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     if search:
-        student_list = conn.execute("""
+
+        cursor.execute("""
             SELECT * FROM students
-            WHERE name LIKE ?
-            OR roll_number LIKE ?
-            OR class_name LIKE ?
+            WHERE name ILIKE %s
+            OR roll_number ILIKE %s
+            OR class_name ILIKE %s
             ORDER BY id DESC
         """, (
             "%" + search + "%",
             "%" + search + "%",
             "%" + search + "%"
-        )).fetchall()
+        ))
 
     else:
-        student_list = conn.execute("""
+
+        cursor.execute("""
             SELECT * FROM students
             ORDER BY id DESC
-        """).fetchall()
+        """)
 
+    student_list = cursor.fetchall()
+
+    cursor.close()
     conn.close()
 
     return render_template(
@@ -274,12 +299,13 @@ def add_student():
     parent_contact = request.form.get("parent_contact", "")
 
     conn = get_db()
+    cursor = conn.cursor()
 
-    conn.execute("""
+    cursor.execute("""
         INSERT INTO students
         (name, roll_number, class_name, section,
          parent_name, parent_contact)
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """, (
         name,
         roll_number,
@@ -290,6 +316,7 @@ def add_student():
     ))
 
     conn.commit()
+    cursor.close()
     conn.close()
 
     return redirect("/students")
@@ -303,18 +330,28 @@ def add_student():
 def delete_student(student_id):
 
     conn = get_db()
+    cursor = conn.cursor()
 
-    conn.execute(
-        "DELETE FROM students WHERE id = ?",
+    # Delete related marks first
+    cursor.execute(
+        "DELETE FROM marks WHERE student_id = %s",
         (student_id,)
     )
 
-    conn.execute(
-        "DELETE FROM attendance WHERE student_id = ?",
+    # Delete related attendance
+    cursor.execute(
+        "DELETE FROM attendance WHERE student_id = %s",
+        (student_id,)
+    )
+
+    # Delete student
+    cursor.execute(
+        "DELETE FROM students WHERE id = %s",
         (student_id,)
     )
 
     conn.commit()
+    cursor.close()
     conn.close()
 
     return redirect("/students")
@@ -328,6 +365,7 @@ def delete_student(student_id):
 def edit_student(student_id):
 
     conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     if request.method == "POST":
 
@@ -338,16 +376,16 @@ def edit_student(student_id):
         parent_name = request.form.get("parent_name", "")
         parent_contact = request.form.get("parent_contact", "")
 
-        conn.execute("""
+        cursor.execute("""
             UPDATE students
             SET
-                name = ?,
-                roll_number = ?,
-                class_name = ?,
-                section = ?,
-                parent_name = ?,
-                parent_contact = ?
-            WHERE id = ?
+                name = %s,
+                roll_number = %s,
+                class_name = %s,
+                section = %s,
+                parent_name = %s,
+                parent_contact = %s
+            WHERE id = %s
         """, (
             name,
             roll_number,
@@ -359,15 +397,20 @@ def edit_student(student_id):
         ))
 
         conn.commit()
+
+        cursor.close()
         conn.close()
 
         return redirect("/students")
 
-    student = conn.execute(
-        "SELECT * FROM students WHERE id = ?",
+    cursor.execute(
+        "SELECT * FROM students WHERE id = %s",
         (student_id,)
-    ).fetchone()
+    )
 
+    student = cursor.fetchone()
+
+    cursor.close()
     conn.close()
 
     if student is None:
@@ -463,12 +506,16 @@ def edit_student(student_id):
 def teachers():
 
     conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    teachers_list = conn.execute("""
+    cursor.execute("""
         SELECT * FROM teachers
         ORDER BY id DESC
-    """).fetchall()
+    """)
 
+    teachers_list = cursor.fetchall()
+
+    cursor.close()
     conn.close()
 
     return render_template(
@@ -491,11 +538,12 @@ def add_teacher():
     phone = request.form.get("phone", "")
 
     conn = get_db()
+    cursor = conn.cursor()
 
-    conn.execute("""
+    cursor.execute("""
         INSERT INTO teachers
         (name, teacher_id, subject, class_name, phone)
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s)
     """, (
         name,
         teacher_id,
@@ -505,6 +553,7 @@ def add_teacher():
     ))
 
     conn.commit()
+    cursor.close()
     conn.close()
 
     return redirect("/teachers")
@@ -518,13 +567,16 @@ def add_teacher():
 def marks():
 
     conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    students_list = conn.execute("""
+    cursor.execute("""
         SELECT * FROM students
         ORDER BY class_name, roll_number
-    """).fetchall()
+    """)
 
-    marks_list = conn.execute("""
+    students_list = cursor.fetchall()
+
+    cursor.execute("""
         SELECT
             marks.id,
             marks.subject,
@@ -537,8 +589,11 @@ def marks():
         JOIN students
         ON marks.student_id = students.id
         ORDER BY marks.id DESC
-    """).fetchall()
+    """)
 
+    marks_list = cursor.fetchall()
+
+    cursor.close()
     conn.close()
 
     return render_template(
@@ -567,11 +622,12 @@ def add_marks():
         return "Obtained marks must be between 0 and total marks"
 
     conn = get_db()
+    cursor = conn.cursor()
 
-    conn.execute("""
+    cursor.execute("""
         INSERT INTO marks
         (student_id, subject, marks_obtained, total_marks)
-        VALUES (?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s)
     """, (
         student_id,
         subject,
@@ -580,6 +636,7 @@ def add_marks():
     ))
 
     conn.commit()
+    cursor.close()
     conn.close()
 
     return redirect("/marks")
@@ -593,13 +650,15 @@ def add_marks():
 def delete_marks(mark_id):
 
     conn = get_db()
+    cursor = conn.cursor()
 
-    conn.execute(
-        "DELETE FROM marks WHERE id = ?",
+    cursor.execute(
+        "DELETE FROM marks WHERE id = %s",
         (mark_id,)
     )
 
     conn.commit()
+    cursor.close()
     conn.close()
 
     return redirect("/marks")
@@ -613,23 +672,30 @@ def delete_marks(mark_id):
 def result(student_id):
 
     conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    student = conn.execute("""
+    cursor.execute("""
         SELECT * FROM students
-        WHERE id = ?
-    """, (student_id,)).fetchone()
+        WHERE id = %s
+    """, (student_id,))
+
+    student = cursor.fetchone()
 
     if student is None:
+        cursor.close()
         conn.close()
         return "Student not found"
 
-    marks_list = conn.execute("""
+    cursor.execute("""
         SELECT *
         FROM marks
-        WHERE student_id = ?
+        WHERE student_id = %s
         ORDER BY id
-    """, (student_id,)).fetchall()
+    """, (student_id,))
 
+    marks_list = cursor.fetchall()
+
+    cursor.close()
     conn.close()
 
     total_obtained = sum(
@@ -690,18 +756,24 @@ def attendance():
     )
 
     conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    students_list = conn.execute("""
+    cursor.execute("""
         SELECT * FROM students
         ORDER BY class_name, roll_number
-    """).fetchall()
+    """)
 
-    records = conn.execute("""
+    students_list = cursor.fetchall()
+
+    cursor.execute("""
         SELECT student_id, status
         FROM attendance
-        WHERE attendance_date = ?
-    """, (selected_date,)).fetchall()
+        WHERE attendance_date = %s
+    """, (selected_date,))
 
+    records = cursor.fetchall()
+
+    cursor.close()
     conn.close()
 
     attendance_data = {
@@ -727,10 +799,13 @@ def save_attendance():
     attendance_date = request.form["attendance_date"]
 
     conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    students_list = conn.execute(
+    cursor.execute(
         "SELECT id FROM students"
-    ).fetchall()
+    )
+
+    students_list = cursor.fetchall()
 
     for student in students_list:
 
@@ -741,13 +816,13 @@ def save_attendance():
             "Present"
         )
 
-        conn.execute("""
+        cursor.execute("""
             INSERT INTO attendance
             (student_id, attendance_date, status)
-            VALUES (?, ?, ?)
+            VALUES (%s, %s, %s)
 
             ON CONFLICT(student_id, attendance_date)
-            DO UPDATE SET status = excluded.status
+            DO UPDATE SET status = EXCLUDED.status
         """, (
             student_id,
             attendance_date,
@@ -755,6 +830,7 @@ def save_attendance():
         ))
 
     conn.commit()
+    cursor.close()
     conn.close()
 
     return redirect(
@@ -772,35 +848,40 @@ def report():
     search = request.args.get("search", "")
 
     conn = get_db()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     if search:
 
-        students_list = conn.execute("""
+        cursor.execute("""
             SELECT * FROM students
-            WHERE name LIKE ?
-            OR roll_number LIKE ?
+            WHERE name ILIKE %s
+            OR roll_number ILIKE %s
             ORDER BY class_name, roll_number
         """, (
             "%" + search + "%",
             "%" + search + "%"
-        )).fetchall()
+        ))
 
     else:
 
-        students_list = conn.execute("""
+        cursor.execute("""
             SELECT * FROM students
             ORDER BY class_name, roll_number
-        """).fetchall()
+        """)
+
+    students_list = cursor.fetchall()
 
     reports = []
 
     for student in students_list:
 
-        records = conn.execute("""
+        cursor.execute("""
             SELECT status
             FROM attendance
-            WHERE student_id = ?
-        """, (student["id"],)).fetchall()
+            WHERE student_id = %s
+        """, (student["id"],))
+
+        records = cursor.fetchall()
 
         total_days = len(records)
 
@@ -838,6 +919,7 @@ def report():
             "percentage": percentage
         })
 
+    cursor.close()
     conn.close()
 
     return render_template(
