@@ -7,67 +7,75 @@
 
 <body>
 
-    <div class="header">
-        <h1>✏️ Edit Teacher</h1>
+<div class="header">
+    <h1>✏️ Edit Teacher</h1>
+    <a href="/teachers">← Back to Teachers</a>
+</div>
+
+<div class="container">
+
+    <div class="form-box">
+
+        <h2>Update Teacher</h2>
+
+        <form method="POST">
+
+            <input
+                type="text"
+                name="name"
+                value="{{ teacher['name'] }}"
+                placeholder="Teacher Name"
+                required
+            >
+
+            <input
+                type="text"
+                name="teacher_id"
+                value="{{ teacher['teacher_id'] }}"
+                placeholder="Teacher ID"
+                required
+            >
+
+            <input
+                type="text"
+                name="subject"
+                value="{{ teacher['subject'] }}"
+                placeholder="Subject"
+                required
+            >
+
+            <input
+                type="text"
+                name="class_name"
+                value="{{ teacher['class_name'] }}"
+                placeholder="Class"
+                required
+            >
+
+            <input
+                type="text"
+                name="phone"
+                value="{{ teacher['phone'] or '' }}"
+                placeholder="Phone Number"
+            >
+
+            <br><br>
+
+            <button type="submit">
+                Update Teacher
+            </button>
+
+        </form>
+
+        <br>
+
+        <a href="/teachers">
+            ← Back to Teachers
+        </a>
+
     </div>
 
-    <div class="container">
-
-        <div class="form-box">
-
-            <form method="POST">
-
-                <input
-                    name="name"
-                    value="{{ teacher.name }}"
-                    placeholder="Teacher Name"
-                    required
-                >
-
-                <input
-                    name="teacher_id"
-                    value="{{ teacher.teacher_id }}"
-                    placeholder="Teacher ID"
-                    required
-                >
-
-                <input
-                    name="subject"
-                    value="{{ teacher.subject }}"
-                    placeholder="Subject"
-                    required
-                >
-
-                <input
-                    name="class_name"
-                    value="{{ teacher.class_name }}"
-                    placeholder="Class"
-                    required
-                >
-
-                <input
-                    name="phone"
-                    value="{{ teacher.phone or '' }}"
-                    placeholder="Phone"
-                >
-
-                <br><br>
-
-                <button type="submit">
-                    Update Teacher
-                </button>
-
-            </form>
-
-            <br>
-
-            <a href="/teachers">
-                ← Back to Teachers
-            </a>
-
-        </div>
-
-    </div>
+</div>
 
 </body>
 </html>
