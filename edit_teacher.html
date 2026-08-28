@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Teacher</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>✏️ Edit Teacher</h1>
+    </div>
+
+    <div class="container">
+
+        <div class="form-box">
+
+            <form method="POST">
+
+                <input
+                    name="name"
+                    value="{{ teacher.name }}"
+                    placeholder="Teacher Name"
+                    required
+                >
+
+                <input
+                    name="teacher_id"
+                    value="{{ teacher.teacher_id }}"
+                    placeholder="Teacher ID"
+                    required
+                >
+
+                <input
+                    name="subject"
+                    value="{{ teacher.subject }}"
+                    placeholder="Subject"
+                    required
+                >
+
+                <input
+                    name="class_name"
+                    value="{{ teacher.class_name }}"
+                    placeholder="Class"
+                    required
+                >
+
+                <input
+                    name="phone"
+                    value="{{ teacher.phone or '' }}"
+                    placeholder="Phone"
+                >
+
+                <br><br>
+
+                <button type="submit">
+                    Update Teacher
+                </button>
+
+            </form>
+
+            <br>
+
+            <a href="/teachers">
+                ← Back to Teachers
+            </a>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
