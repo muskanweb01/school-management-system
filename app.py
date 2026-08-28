@@ -556,6 +556,28 @@ def add_teacher():
 
 
 # =====================================================
+# DELETE TEACHER
+# =====================================================
+
+@app.route("/delete_teacher/<int:teacher_id>")
+def delete_teacher(teacher_id):
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "DELETE FROM teachers WHERE id = %s",
+        (teacher_id,)
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect("/teachers")
+
+
+# =====================================================
 # EDIT TEACHER
 # =====================================================
 
@@ -592,16 +614,15 @@ def edit_teacher(teacher_id):
         ))
 
         conn.commit()
-
         cursor.close()
         conn.close()
 
         return redirect("/teachers")
 
-    cursor.execute(
-        "SELECT * FROM teachers WHERE id = %s",
-        (teacher_id,)
-    )
+    cursor.execute("""
+        SELECT * FROM teachers
+        WHERE id = %s
+    """, (teacher_id,))
 
     teacher = cursor.fetchone()
 
@@ -615,31 +636,6 @@ def edit_teacher(teacher_id):
         "edit_teacher.html",
         teacher=teacher
     )
-
-
-# =====================================================
-# DELETE TEACHER
-# =====================================================
-
-@app.route("/delete_teacher/<int:teacher_id>", methods=["POST"])
-def delete_teacher(teacher_id):
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "DELETE FROM teachers WHERE id = %s",
-        (teacher_id,)
-    )
-
-    conn.commit()
-
-    cursor.close()
-    conn.close()
-
-    return redirect("/teachers")
-
-
 # =====================================================
 # MARKS / RESULTS
 # =====================================================
