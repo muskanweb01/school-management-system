@@ -13,44 +13,114 @@
 </div>
 
 <div class="container">
-<h2>Add Teacher</h2>
 
-<form method="POST" action="/add_teacher">
+    <h2>Add Teacher</h2>
 
-    <input type="text" name="name" placeholder="Teacher Name" required>
+    <form method="POST" action="/add_teacher">
 
-    <input type="text" name="teacher_id" placeholder="Teacher ID" required>
+        <input
+            type="text"
+            name="name"
+            placeholder="Teacher Name"
+            required
+        >
 
-    <input type="text" name="subject" placeholder="Subject" required>
+        <input
+            type="text"
+            name="teacher_id"
+            placeholder="Teacher ID"
+            required
+        >
 
-    <input type="text" name="class_name" placeholder="Class" required>
+        <input
+            type="text"
+            name="subject"
+            placeholder="Subject"
+            required
+        >
 
-    <input type="text" name="phone" placeholder="Phone Number">
+        <input
+            type="text"
+            name="class_name"
+            placeholder="Class"
+            required
+        >
 
-    <br><br>
+        <input
+            type="text"
+            name="phone"
+            placeholder="Phone Number"
+        >
 
-    <button type="submit">Add Teacher</button>
+        <br><br>
 
-</form>
+        <button type="submit">
+            Add Teacher
+        </button>
 
-<br>
+    </form>
+
+    <br>
+
     <h2>Teachers Records</h2>
 
     <table>
+
         <tr>
             <th>ID</th>
             <th>Name</th>
+            <th>Teacher ID</th>
             <th>Subject</th>
+            <th>Class</th>
             <th>Phone</th>
+            <th>Actions</th>
         </tr>
 
         {% for teacher in teachers %}
+
         <tr>
+
             <td>{{ teacher['id'] }}</td>
+
             <td>{{ teacher['name'] }}</td>
+
+            <td>{{ teacher['teacher_id'] }}</td>
+
             <td>{{ teacher['subject'] }}</td>
+
+            <td>{{ teacher['class_name'] }}</td>
+
             <td>{{ teacher['phone'] }}</td>
+
+            <td>
+
+                <a href="/edit_teacher/{{ teacher['id'] }}">
+                    <button type="button">
+                        ✏️ Edit
+                    </button>
+                </a>
+
+                <a
+                    href="/delete_teacher/{{ teacher['id'] }}"
+                    onclick="return confirm('Are you sure you want to delete this teacher?');"
+                >
+                    <button type="button">
+                        🗑️ Delete
+                    </button>
+                </a>
+
+            </td>
+
         </tr>
+
+        {% else %}
+
+        <tr>
+            <td colspan="7">
+                No teachers found.
+            </td>
+        </tr>
+
         {% endfor %}
 
     </table>
